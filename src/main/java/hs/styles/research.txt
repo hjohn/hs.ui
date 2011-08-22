@@ -1,0 +1,17 @@
+
+
+
+// #id
+// .class
+// type
+// type.class
+// *  (any)
+// parent > child
+// parent descendant
+// left + right
+// ,  (seperator)
+
+
+Button {
+  color: #ff0000;
+}
