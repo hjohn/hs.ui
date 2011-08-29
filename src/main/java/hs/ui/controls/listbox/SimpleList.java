@@ -39,11 +39,12 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     }
   };
   
+  private final JList<T> list; 
+  
   public SimpleList() {
     super(new JScrollPane(), new JList<T>());
     
-    @SuppressWarnings("unchecked")
-    final JList<T> list = (JList<T>)getSecondaryComponent();
+    list = (JList<T>)getSecondaryComponent();
     getComponent().setViewportView(list);
     
     /*
@@ -140,5 +141,9 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
   public void selectFirstItem() {
     ((JList<T>)getSecondaryComponent()).setSelectedIndex(0);
   }
- 
+  
+  public T getActiveRow() {
+    return list.getSelectedValue();
+  }
+
 }
