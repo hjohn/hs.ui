@@ -4,6 +4,8 @@ import hs.models.BasicListModel;
 import hs.models.ListModel;
 import hs.models.Model;
 import hs.models.ValueModel;
+import hs.models.events.EventListener;
+import hs.models.events.ItemRangeEvent;
 import hs.models.events.Listener;
 import hs.models.events.ListenerList;
 import hs.models.events.Notifier;
@@ -27,17 +29,7 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
 
   private final Notifier<ItemsEvent<T>> doubleClickNotifier = new Notifier<ItemsEvent<T>>();
 
-  private final AbstractListModel<T> swingModel = new AbstractListModel<T>() {
-    @Override
-    public int getSize() {
-      return model.size();
-    }
-
-    @Override
-    public T getElementAt(int index) {
-      return model.get(index);
-    }
-  };
+  private final MyListModel swingModel = new MyListModel();
   
   private final JList<T> list; 
   
@@ -46,6 +38,30 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     
     list = (JList<T>)getSecondaryComponent();
     getComponent().setViewportView(list);
+    
+    items().onItemsInserted().call(new EventListener<ItemRangeEvent>() {
+      @Override
+      public void onEvent(ItemRangeEvent event) {
+        System.err.println("Rows inserted " + event.getFirstIndex() + "-" + event.getLastIndex());
+        swingModel.fireIntervalAdded(list, event.getFirstIndex(), event.getLastIndex());
+      }
+    });
+    
+    items().afterItemsRemoved().call(new EventListener<ItemRangeEvent>() {
+      @Override
+      public void onEvent(ItemRangeEvent event) {
+        System.err.println("Rows removed " + event.getFirstIndex() + "-" + event.getLastIndex());
+        swingModel.fireIntervalRemoved(list, event.getFirstIndex(), event.getLastIndex());
+      }
+    });
+    
+    items().onItemsChanged().call(new EventListener<ItemRangeEvent>() {
+      @Override
+      public void onEvent(ItemRangeEvent event) {
+        System.err.println("Rows changed " + event.getFirstIndex() + "-" + event.getLastIndex());
+        swingModel.fireContentsChanged(list, event.getFirstIndex(), event.getLastIndex());
+      }
+    });
     
     /*
      * RowHeight -> Swing
@@ -144,6 +160,33 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
   
   public T getActiveRow() {
     return list.getSelectedValue();
+  }
+
+  private class MyListModel extends AbstractListModel<T> {
+    @Override
+    public int getSize() {
+      return model.size();
+    }
+
+    @Override
+    public T getElementAt(int index) {
+      return model.get(index);
+    }
+    
+    @Override
+    public void fireContentsChanged(Object source, int index0, int index1) {
+      super.fireContentsChanged(source, index0, index1);
+    }
+    
+    @Override
+    public void fireIntervalAdded(Object source, int index0, int index1) {
+      super.fireIntervalAdded(source, index0, index1);
+    }
+    
+    @Override
+    public void fireIntervalRemoved(Object source, int index0, int index1) {
+      super.fireContentsChanged(source, index0, index1);
+    }
   }
 
 }
