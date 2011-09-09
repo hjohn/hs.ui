@@ -77,14 +77,18 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     rowHeight.onChange().call(rowSizeListener);
     
     /*
-     * Item Selection handling
+     * Item Focus handling
      */
     
     list.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
       public void valueChanged(ListSelectionEvent e) {
         if(!e.getValueIsAdjusting()) {
-          itemSelectedNotifier.notifyListeners(new ItemsEvent<T>(SimpleList.this, model.get(list.getSelectionModel().getLeadSelectionIndex()), null));
+          int leadIndex = list.getSelectionModel().getLeadSelectionIndex();
+          
+          if(leadIndex < model.size()) {
+            itemFocusedNotifier.notifyListeners(new ItemsEvent<T>(SimpleList.this, model.get(leadIndex), null));
+          }
         }
       }
     });
@@ -142,10 +146,10 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     return doubleClickNotifier.getListenerList();
   }
   
-  private final Notifier<ItemsEvent<T>> itemSelectedNotifier = new Notifier<ItemsEvent<T>>();
+  private final Notifier<ItemsEvent<T>> itemFocusedNotifier = new Notifier<ItemsEvent<T>>();
   
-  public ListenerList<ItemsEvent<T>> onItemSelected() {
-    return itemSelectedNotifier.getListenerList();
+  public ListenerList<ItemsEvent<T>> onItemFocused() {
+    return itemFocusedNotifier.getListenerList();
   }
 
   @SuppressWarnings("unchecked")
