@@ -7,6 +7,7 @@ import hs.ui.swing.JPaintablePanel;
 import hs.ui.swing.Painter;
 
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -28,15 +29,17 @@ public class Picture extends AbstractJComponent<Picture, JPaintablePanel> {
       public void paint(Graphics2D g, int width, int height) {
         if(image.get() != null) {
           BufferedImage imageToRender = image.get();
-          int w = getComponent().getWidth();
-          int h = getComponent().getHeight();
+          Insets insets = getComponent().getInsets();
+          
+          int w = getComponent().getWidth() - insets.left - insets.right;
+          int h = getComponent().getHeight() - insets.top - insets.bottom;
           
           if(scale.get() && scaledImage == null) {
             imageToRender = resize(image.get(), w, h, keepAspect.get());
           }
           
-          int x = (int)((w - imageToRender.getWidth()) * alignmentX.get());
-          int y = (int)((h - imageToRender.getHeight()) * alignmentY.get());
+          int x = (int)((w - imageToRender.getWidth()) * alignmentX.get()) + insets.left;
+          int y = (int)((h - imageToRender.getHeight()) * alignmentY.get()) + insets.top;
           
           g.drawImage(imageToRender, x, y, null);
         }

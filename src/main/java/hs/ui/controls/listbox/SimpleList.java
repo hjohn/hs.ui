@@ -76,6 +76,16 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
 
     rowHeight.onChange().call(rowSizeListener);
     
+    Listener listCellRendererListener = new Listener() {
+      @Override
+      public void onEvent() {
+        list.setCellRenderer(listCellRenderer.get());
+      }
+    };
+    
+    listCellRenderer.set(list.getCellRenderer());
+    listCellRenderer.onChange().call(listCellRendererListener);
+    
     /*
      * Item Focus handling
      */
@@ -86,7 +96,7 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
         if(!e.getValueIsAdjusting()) {
           int leadIndex = list.getSelectionModel().getLeadSelectionIndex();
           
-          if(leadIndex < model.size()) {
+          if(leadIndex < model.size() && leadIndex >= 0) {
             itemFocusedNotifier.notifyListeners(new ItemsEvent<T>(SimpleList.this, model.get(leadIndex), null));
           }
         }
@@ -142,6 +152,9 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
   private final Model<Integer> rowHeight = new ValueModel<Integer>(16);
   public Model<Integer> rowHeight() { return rowHeight; }
   
+  private final Model<ListCellRenderer<? super T>> listCellRenderer = new ValueModel<ListCellRenderer<? super T>>();
+  public Model<ListCellRenderer<? super T>> listCellRenderer() { return listCellRenderer; }
+  
   public ListenerList<ItemsEvent<T>> onItemDoubleClick() {  // TODO Need better name for this.. activated?
     return doubleClickNotifier.getListenerList();
   }
@@ -150,11 +163,6 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
   
   public ListenerList<ItemsEvent<T>> onItemFocused() {
     return itemFocusedNotifier.getListenerList();
-  }
-
-  @SuppressWarnings("unchecked")
-  public void setCellRenderer(ListCellRenderer<T> renderer) {
-    ((JList<T>)getSecondaryComponent()).setCellRenderer(renderer);
   }
   
   @SuppressWarnings("unchecked")
@@ -189,7 +197,7 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     
     @Override
     public void fireIntervalRemoved(Object source, int index0, int index1) {
-      super.fireContentsChanged(source, index0, index1);
+      super.fireIntervalRemoved(source, index0, index1);
     }
   }
 
