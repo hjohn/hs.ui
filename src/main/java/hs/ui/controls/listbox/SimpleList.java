@@ -12,6 +12,7 @@ import hs.models.events.Notifier;
 import hs.ui.controls.AbstractJComponent;
 import hs.ui.events.ItemsEvent;
 
+import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -22,6 +23,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -39,7 +42,7 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     list = (JList<T>)getSecondaryComponent();
     getComponent().setViewportView(list);
     
-    items().onItemsInserted().call(new EventListener<ItemRangeEvent>() {
+    model.onItemsInserted().call(new EventListener<ItemRangeEvent>() {
       @Override
       public void onEvent(ItemRangeEvent event) {
         System.err.println("Rows inserted " + event.getFirstIndex() + "-" + event.getLastIndex());
@@ -47,7 +50,7 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
       }
     });
     
-    items().afterItemsRemoved().call(new EventListener<ItemRangeEvent>() {
+    model.afterItemsRemoved().call(new EventListener<ItemRangeEvent>() {
       @Override
       public void onEvent(ItemRangeEvent event) {
         System.err.println("Rows removed " + event.getFirstIndex() + "-" + event.getLastIndex());
@@ -55,7 +58,7 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
       }
     });
     
-    items().onItemsChanged().call(new EventListener<ItemRangeEvent>() {
+    model.onItemsChanged().call(new EventListener<ItemRangeEvent>() {
       @Override
       public void onEvent(ItemRangeEvent event) {
         System.err.println("Rows changed " + event.getFirstIndex() + "-" + event.getLastIndex());
@@ -64,27 +67,44 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     });
     
     /*
-     * RowHeight -> Swing
+     * Properties -> Swing
      */
-    
-    Listener rowSizeListener = new Listener() {
+
+    rowHeight.onChange().call(new Listener() {
       @Override
       public void onEvent() {
         list.setFixedCellHeight(rowHeight.get());
       }
-    };
-
-    rowHeight.onChange().call(rowSizeListener);
+    });
     
-    Listener listCellRendererListener = new Listener() {
+    cellRenderer.set(list.getCellRenderer());
+    cellRenderer.onChange().call(new Listener() {
       @Override
       public void onEvent() {
-        list.setCellRenderer(listCellRenderer.get());
+        list.setCellRenderer(cellRenderer.get());
       }
-    };
+    });
     
-    listCellRenderer.set(list.getCellRenderer());
-    listCellRenderer.onChange().call(listCellRendererListener);
+    firstSelectedIndex.onChange().call(new Listener() {
+      @Override
+      public void onEvent() {
+        list.setSelectedIndex(firstSelectedIndex.get());
+      }
+    });
+    
+    visibleRectangle.onChange().call(new Listener() {
+      @Override
+      public void onEvent() {
+        list.scrollRectToVisible(visibleRectangle.get());
+      }
+    });
+    
+    getComponent().getViewport().addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        visibleRectangle.set(list.getVisibleRect());
+      }
+    });
     
     /*
      * Item Focus handling
@@ -99,6 +119,8 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
           if(leadIndex < model.size() && leadIndex >= 0) {
             itemFocusedNotifier.notifyListeners(new ItemsEvent<T>(SimpleList.this, model.get(leadIndex), null));
           }
+          
+          firstSelectedIndex.set(list.getSelectedIndex());
         }
       }
     });
@@ -146,14 +168,11 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     return this;
   }
   
-  private final ListModel<T> model = new BasicListModel<T>(new ArrayList<T>());
-  public ListModel<T> items() { return model; }
-  
-  private final Model<Integer> rowHeight = new ValueModel<Integer>(16);
-  public Model<Integer> rowHeight() { return rowHeight; }
-  
-  private final Model<ListCellRenderer<? super T>> listCellRenderer = new ValueModel<ListCellRenderer<? super T>>();
-  public Model<ListCellRenderer<? super T>> listCellRenderer() { return listCellRenderer; }
+  public final ListModel<T> model = new BasicListModel<>(new ArrayList<T>());
+  public final Model<Integer> rowHeight = new ValueModel<>(16);
+  public final Model<ListCellRenderer<? super T>> cellRenderer = new ValueModel<>();
+  public final Model<Rectangle> visibleRectangle = new ValueModel<>();
+  public final Model<Integer> firstSelectedIndex = new ValueModel<>();
   
   public ListenerList<ItemsEvent<T>> onItemDoubleClick() {  // TODO Need better name for this.. activated?
     return doubleClickNotifier.getListenerList();
