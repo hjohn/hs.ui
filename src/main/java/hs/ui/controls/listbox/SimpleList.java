@@ -106,6 +106,13 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
       }
     });
     
+    prototypeCellValue.onChange().call(new Listener() {
+      @Override
+      public void onEvent() {
+        list.setPrototypeCellValue(prototypeCellValue.get());
+      }
+    });
+    
     /*
      * Item Focus handling
      */
@@ -173,6 +180,7 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
   public final Model<ListCellRenderer<? super T>> cellRenderer = new ValueModel<>();
   public final Model<Rectangle> visibleRectangle = new ValueModel<>();
   public final Model<Integer> firstSelectedIndex = new ValueModel<>();
+  public final Model<T> prototypeCellValue = new ValueModel<>();
   
   public ListenerList<ItemsEvent<T>> onItemDoubleClick() {  // TODO Need better name for this.. activated?
     return doubleClickNotifier.getListenerList();
