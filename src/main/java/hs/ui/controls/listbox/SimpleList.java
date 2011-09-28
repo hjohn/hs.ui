@@ -45,7 +45,6 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     model.onItemsInserted().call(new EventListener<ItemRangeEvent>() {
       @Override
       public void onEvent(ItemRangeEvent event) {
-        System.err.println("Rows inserted " + event.getFirstIndex() + "-" + event.getLastIndex());
         swingModel.fireIntervalAdded(list, event.getFirstIndex(), event.getLastIndex());
       }
     });
@@ -53,7 +52,6 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     model.afterItemsRemoved().call(new EventListener<ItemRangeEvent>() {
       @Override
       public void onEvent(ItemRangeEvent event) {
-        System.err.println("Rows removed " + event.getFirstIndex() + "-" + event.getLastIndex());
         swingModel.fireIntervalRemoved(list, event.getFirstIndex(), event.getLastIndex());
       }
     });
@@ -61,7 +59,6 @@ public class SimpleList<T> extends AbstractJComponent<SimpleList<T>, JScrollPane
     model.onItemsChanged().call(new EventListener<ItemRangeEvent>() {
       @Override
       public void onEvent(ItemRangeEvent event) {
-        System.err.println("Rows changed " + event.getFirstIndex() + "-" + event.getLastIndex());
         swingModel.fireContentsChanged(list, event.getFirstIndex(), event.getLastIndex());
       }
     });
