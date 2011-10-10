@@ -75,4 +75,8 @@ public abstract class AbstractContainer<T extends Control<T>, O, S extends JComp
     
     styler.postVisitGroup(this);
   }
+  
+  public void revalidate() {
+    getComponent().revalidate();
+  }
 }
