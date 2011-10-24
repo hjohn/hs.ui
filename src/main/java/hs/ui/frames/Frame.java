@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -50,12 +51,12 @@ public class Frame extends AbstractFrame<Frame> {
   
   private final MyWindowAdapter windowAdapter = new MyWindowAdapter(this);
   
-  public Frame(Window owner, boolean isDialog) {
+  public Frame(GraphicsConfiguration config, Window owner, boolean isDialog) {
     if(isDialog) {
       this.frameAdapter = new Dialog(owner);
     }
     else {
-      this.frameAdapter = new TopFrame();
+      this.frameAdapter = new TopFrame(config);
     }
     
     title = new OwnedBeanModel<Frame, String>(this, frameAdapter, "title");
@@ -113,9 +114,17 @@ public class Frame extends AbstractFrame<Frame> {
     maxWidth().onChange().call(sizeListener);
     maxHeight().onChange().call(sizeListener);
   }
-  
+
+  public Frame(Window owner, boolean isDialog) {
+    this(null, owner, isDialog);
+  }
+    
+  public Frame(GraphicsConfiguration config) {
+    this(config, null, false);
+  }
+
   public Frame() {
-    this(null, false);
+    this(null, null, false);
   }
   
   @Override
@@ -419,8 +428,8 @@ public class Frame extends AbstractFrame<Frame> {
   public class TopFrame extends FrameAdapter {
     private final JFrame frame;
 
-    public TopFrame() {
-      this.frame = new JFrame();
+    public TopFrame(GraphicsConfiguration config) {
+      this.frame = new JFrame(config);
 
       frame.addWindowListener(windowAdapter);
       frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
