@@ -18,4 +18,12 @@ public class ImageHandle {
   public BufferedImage getImage(int w, int h, boolean keepAspect) {
     return ImageCache.loadImage(key, imageData, w, h, keepAspect);
   }
+  
+  public byte[] getImageData() {
+    return imageData;
+  }
+  
+  public String getKey() {
+    return key;
+  }
 }
