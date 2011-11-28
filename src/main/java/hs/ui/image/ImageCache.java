@@ -13,14 +13,14 @@ import javax.imageio.ImageIO;
 public class ImageCache {
   private static Map<String, BufferedImage> cache = new HashMap<String, BufferedImage>();
   
-  public static BufferedImage loadImage(String key, byte[] imageData) {
-    BufferedImage image = cache.get(key);
+  public static BufferedImage loadImage(ImageHandle handle) {
+    BufferedImage image = cache.get(handle.getKey());
     
-    if(image == null && imageData != null) {
+    if(image == null && handle.getImageData() != null) {
       try {
-        image = ImageIO.read(new ByteArrayInputStream(imageData));
-        cache.put(key, image);
-        cache.put(createKey(key, image.getWidth(), image.getHeight(), true), image);
+        image = ImageIO.read(new ByteArrayInputStream(handle.getImageData()));
+        cache.put(handle.getKey(), image);
+        cache.put(createKey(handle.getKey(), image.getWidth(), image.getHeight(), true), image);
       }
       catch(IOException e) {
         // Ignore
@@ -34,18 +34,18 @@ public class ImageCache {
     return key + "-" + w + "x" + h + "-" + (keepAspect ? "T" : "F");
   }
 
-  public static BufferedImage loadImage(String name, byte[] imageData, int w, int h, boolean keepAspect) {
-    String key = createKey(name, w, h, keepAspect);
+  public static BufferedImage loadImage(ImageHandle handle, int w, int h, boolean keepAspect) {
+    String key = createKey(handle.getKey(), w, h, keepAspect);
     BufferedImage image = cache.get(key);
 
-    if(image == null && imageData != null) {
+    if(image == null && handle.getImageData() != null) {
       try {
-        image = ImageIO.read(new ByteArrayInputStream(imageData));
+        image = ImageIO.read(new ByteArrayInputStream(handle.getImageData()));
         image = resize(image, w, h, keepAspect);
         
         cache.put(key, image);
         if(image.getWidth() == w && image.getHeight() == h) {
-          cache.put(name, image);
+          cache.put(handle.getKey(), image);
         }
       }
       catch(IOException e) {

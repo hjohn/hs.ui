@@ -3,6 +3,7 @@ package hs.ui.controls;
 import hs.models.Model;
 import hs.models.ValueModel;
 import hs.models.events.Listener;
+import hs.ui.image.ImageCache;
 import hs.ui.image.ImageHandle;
 import hs.ui.swing.JPaintablePanel;
 import hs.ui.swing.Painter;
@@ -30,7 +31,7 @@ public class Picture extends AbstractJComponent<Picture, JPaintablePanel> {
           int w = getComponent().getWidth() - insets.left - insets.right;
           int h = getComponent().getHeight() - insets.top - insets.bottom;
           
-          BufferedImage imageToRender = scale.get() ? imageHandle.get().getImage(w, h, keepAspect.get()) : imageHandle.get().getImage();
+          BufferedImage imageToRender = scale.get() ? ImageCache.loadImage(imageHandle.get(), w, h, keepAspect.get()) : ImageCache.loadImage(imageHandle.get());
 
           int x = (int)((w - imageToRender.getWidth()) * alignmentX.get()) + insets.left;
           int y = (int)((h - imageToRender.getHeight()) * alignmentY.get()) + insets.top;
